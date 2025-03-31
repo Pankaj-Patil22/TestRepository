@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        PROJECT_DIR = "C:\\Users\\PankajPatil\\Desktop\\33N\\33N"
+        VENV_DIR = "C:\\Users\\PankajPatil\\Desktop\\33N\\33N\\.venv"  //Virtual environment path
+    }
+
+    stages {
+        stage('Setup Python Environment') {
+            steps {
+                script {
+                    if (!fileExists("${VENV_DIR}\\Scripts\\activate")) {
+                        bat """
+                        python -m venv ${VENV_DIR}
+                        call ${VENV_DIR}\\Scripts\\activate
+                        pip install --upgrade pip
+                        pip install -r ${PROJECT_DIR}\\requirements.txt
+                        """
+                    } else {
+                        bat """
+                        call ${VENV_DIR}\\Scripts\\activate
+                        echo Using cached virtual environment
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Run Pytest') {
+            steps {
+                bat """
+                set PYTHONUNBUFFERED=True
+                cd ${PROJECT_DIR}
+                call ${VENV_DIR}\\Scripts\\activate
+                python main.py
+                pytest -m demo --env=stage --runremote=false --cleanreports=True --alluredir="reports" --capture=no
+                """
+            }
+        }
+    }
+}
