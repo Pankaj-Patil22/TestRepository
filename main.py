@@ -1,3 +1,3 @@
 def test():
-    print("thische is a test function")
+    print("this is updated code")
     
